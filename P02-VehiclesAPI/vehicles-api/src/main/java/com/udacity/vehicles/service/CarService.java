@@ -1,11 +1,22 @@
 package com.udacity.vehicles.service;
 
+import com.udacity.vehicles.client.maps.Address;
+import com.udacity.vehicles.client.prices.Price;
+import com.udacity.vehicles.domain.Location;
 import com.udacity.vehicles.domain.car.Car;
 import com.udacity.vehicles.domain.car.CarRepository;
-import java.util.List;
-import java.util.Optional;
-
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Implements the car service create, read, update or delete
@@ -14,15 +25,22 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CarService {
-
     private final CarRepository repository;
 
-    public CarService(CarRepository repository) {
-        /**
-         * TODO: Add the Maps and Pricing Web Clients you create
-         *   in `VehiclesApiApplication` as arguments and set them here.
-         */
+    @Value("${maps.endpoint}")
+    private String mapsUrl;
+
+    @Value("${pricing.endpoint}")
+    private String pricingUrl;
+    private final String PRICE_SERVICE_API_ENDPOINT = "services/price";
+    private final String MAP_SERVICE_API_ENDPOINT = "/maps";
+    private final WebClient webClientPricing;
+    private final WebClient webClientMaps;
+
+    public CarService(CarRepository repository, @Qualifier("pricing") WebClient webClientPricing, @Qualifier("maps") WebClient webClientMaps) {
         this.repository = repository;
+        this.webClientPricing = webClientPricing;
+        this.webClientMaps = webClientMaps;
     }
 
     /**
@@ -44,26 +62,46 @@ public class CarService {
             throw new CarNotFoundException();
         }
 
-        /**
-         * TODO: Use the Pricing Web client you create in `VehiclesApiApplication`
-         *   to get the price based on the `id` input'
-         * TODO: Set the price of the car
-         * Note: The car class file uses @transient, meaning you will need to call
-         *   the pricing service each time to get the price.
-         */
+        car.get().setPrice(getPriceForCar(car.get()));
 
-
-        /**
-         * TODO: Use the Maps Web client you create in `VehiclesApiApplication`
-         *   to get the address for the vehicle. You should access the location
-         *   from the car object and feed it to the Maps service.
-         * TODO: Set the location of the vehicle, including the address information
-         * Note: The Location class file also uses @transient for the address,
-         * meaning the Maps service needs to be called each time for the address.
-         */
-
+        car.get().setLocation(getLocationForCar(car.get()));
 
         return car.get();
+    }
+
+    private String getPriceForCar(Car car) {
+        String priceServiceUrl = pricingUrl + PRICE_SERVICE_API_ENDPOINT;
+        priceServiceUrl = UriComponentsBuilder.fromUriString(priceServiceUrl)
+                .queryParam("vehicleId", car.getId().toString())
+                .toUriString();
+        Price price = webClientPricing.get()
+                .uri(priceServiceUrl)
+                .retrieve()
+                .bodyToMono(Price.class)
+                .block();
+
+        return (price.getPrice().toString());
+    }
+
+    private Location getLocationForCar(Car car) {
+        String mapServiceUrl = mapsUrl + MAP_SERVICE_API_ENDPOINT;
+        mapServiceUrl = UriComponentsBuilder.fromUriString(mapServiceUrl)
+                .queryParam("lat", car.getLocation().getLat())
+                .queryParam("lon", car.getLocation().getLon())
+                .toUriString();
+        Address address = webClientMaps.get()
+                .uri(mapServiceUrl)
+                .retrieve()
+                .bodyToMono(Address.class)
+                .block();
+
+        Location location = new Location(car.getLocation().getLat(), car.getLocation().getLon());
+        location.setAddress(address.getAddress());
+        location.setState(address.getState());
+        location.setCity(address.getCity());
+        location.setZip(address.getZip());
+
+        return location;
     }
 
     /**
@@ -97,5 +135,22 @@ public class CarService {
         this.repository.delete(car.get());
 
 
+    }
+
+    private String getParamsString(Map<String, String> parameters)
+            throws UnsupportedEncodingException {
+        StringBuilder result = new StringBuilder();
+
+        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+            result.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8));
+            result.append("=");
+            result.append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));
+            result.append("&");
+        }
+
+        String resultString = result.toString();
+        return resultString.length() > 0
+                ? resultString.substring(0, resultString.length() - 1)
+                : resultString;
     }
 }
