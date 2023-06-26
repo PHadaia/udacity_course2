@@ -3,6 +3,8 @@ package com.udacity.vehicles.service;
 import com.udacity.vehicles.domain.car.Car;
 import com.udacity.vehicles.domain.car.CarRepository;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 /**
@@ -37,12 +39,10 @@ public class CarService {
      * @return the requested car's information, including location and price
      */
     public Car findById(Long id) {
-        /**
-         * TODO: Find the car by ID from the `repository` if it exists.
-         *   If it does not exist, throw a CarNotFoundException
-         *   Remove the below code as part of your implementation.
-         */
-        Car car = new Car();
+        Optional<Car> car = this.repository.findById(id);
+        if(car.isEmpty()) {
+            throw new CarNotFoundException();
+        }
 
         /**
          * TODO: Use the Pricing Web client you create in `VehiclesApiApplication`
@@ -63,7 +63,7 @@ public class CarService {
          */
 
 
-        return car;
+        return car.get();
     }
 
     /**
@@ -89,15 +89,12 @@ public class CarService {
      * @param id the ID number of the car to delete
      */
     public void delete(Long id) {
-        /**
-         * TODO: Find the car by ID from the `repository` if it exists.
-         *   If it does not exist, throw a CarNotFoundException
-         */
+        Optional<Car> car = this.repository.findById(id);
+        if(car.isEmpty()) {
+            throw new CarNotFoundException();
+        }
 
-
-        /**
-         * TODO: Delete the car from the repository.
-         */
+        this.repository.delete(car.get());
 
 
     }
