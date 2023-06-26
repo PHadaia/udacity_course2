@@ -1,0 +1,85 @@
+{
+	"info": {
+		"_postman_id": "9984c6dc-231f-4c13-ae9c-38ef8bebb8a6",
+		"name": "Udacity_2",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "15737535"
+	},
+	"item": [
+		{
+			"name": "GetCar",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "GetCarList",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{carControllerUrl}}",
+					"host": [
+						"{{carControllerUrl}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PostCar",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": null,\r\n    \"createdAt\": null,\r\n    \"modifiedAt\": null,\r\n    \"condition\": \"USED\",\r\n    \"details\": {\r\n        \"body\": \"sedan\",\r\n        \"model\": \"Impala\",\r\n        \"manufacturer\": {\r\n            \"code\": 101,\r\n            \"name\": \"Chevrolet\"\r\n        },\r\n        \"numberOfDoors\": 4,\r\n        \"fuelType\": \"Gasoline\",\r\n        \"engine\": \"3.6L V6\",\r\n        \"mileage\": 32280,\r\n        \"modelYear\": 2018,\r\n        \"productionYear\": 2018,\r\n        \"externalColor\": \"white\"\r\n    },\r\n    \"location\": {\r\n        \"lat\": 40.73061,\r\n        \"lon\": -73.935242,\r\n        \"address\": \"test\",\r\n        \"city\": \"test\",\r\n        \"state\": \"test\",\r\n        \"zip\": \"test\"\r\n    },\r\n    \"price\": \"200\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{carControllerUrl}}",
+					"host": [
+						"{{carControllerUrl}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "carControllerUrl",
+			"value": "http://localhost:8080/cars",
+			"type": "string"
+		}
+	]
+}
