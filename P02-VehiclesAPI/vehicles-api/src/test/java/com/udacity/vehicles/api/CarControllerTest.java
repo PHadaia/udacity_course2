@@ -18,11 +18,15 @@ import com.udacity.vehicles.domain.Location;
 import com.udacity.vehicles.domain.car.Car;
 import com.udacity.vehicles.domain.car.Details;
 import com.udacity.vehicles.domain.manufacturer.Manufacturer;
+import com.udacity.vehicles.service.CarNotFoundException;
 import com.udacity.vehicles.service.CarService;
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
@@ -91,12 +95,14 @@ public class CarControllerTest {
      */
     @Test
     public void listCars() throws Exception {
-        /**
-         * TODO: Add a test to check that the `get` method works by calling
-         *   the whole list of vehicles. This should utilize the car from `getCar()`
-         *   below (the vehicle will be the first in the list).
-         */
+        // Arrange
 
+        // Act
+        List<Car> carListResult = carService.list();
+
+        // Assert
+        Assertions.assertFalse(carListResult.isEmpty());
+        Assertions.assertEquals(1, carListResult.size());
     }
 
     /**
@@ -105,10 +111,17 @@ public class CarControllerTest {
      */
     @Test
     public void findCar() throws Exception {
-        /**
-         * TODO: Add a test to check that the `get` method works by calling
-         *   a vehicle by ID. This should utilize the car from `getCar()` below.
-         */
+        // Arrange
+        Long vehicleId = 1L;
+        Car expectedCar = getCar();
+        expectedCar.setId(vehicleId);
+
+        // Act
+        Car carResult = carService.findById(vehicleId);
+
+        // Assert
+        Assertions.assertNotNull(carResult);
+        Assertions.assertEquals(expectedCar.getId(), carResult.getId());
     }
 
     /**
@@ -117,11 +130,14 @@ public class CarControllerTest {
      */
     @Test
     public void deleteCar() throws Exception {
-        /**
-         * TODO: Add a test to check whether a vehicle is appropriately deleted
-         *   when the `delete` method is called from the Car Controller. This
-         *   should utilize the car from `getCar()` below.
-         */
+        // Arrange
+        Long vehicleId = 1L;
+        Car testCar = getCar();
+        testCar.setId(vehicleId);
+        carService.save(testCar);
+
+        // Act & Assert
+        Assertions.assertDoesNotThrow(() -> carService.delete(vehicleId));
     }
 
     /**
